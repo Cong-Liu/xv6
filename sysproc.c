@@ -116,8 +116,9 @@ sys_end_burst(void)
 	if (burst == 0) return 0;
 
 	//store the burst into array
+	int size = sizeof(proc->bursts) / sizeof(int);
 	proc->bursts[proc->burstIdx] = burst;
-	proc->burstIdx = (proc->burstIdx + 1) % 100;
+	proc->burstIdx = (proc->burstIdx + 1) % size;
 
 	return burst;
 }
@@ -137,6 +138,8 @@ sys_print_bursts(void)
 		if (i > 0) cprintf(", ");
 		cprintf("%d", proc->bursts[i]);
 	}
+
+	cprintf("\r\n");
 
 	return idx;
 }
