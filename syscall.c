@@ -128,9 +128,9 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 
 /* Machine Problem 1: CPU Bursts */
-[SYS_start_burst]    sys_start_burst,
-[SYS_start_burst]    sys_end_burst,
-[SYS_start_burst]    sys_print_bursts,
+[SYS_start_burst]     sys_start_burst,
+[SYS_end_burst]       sys_end_burst,
+[SYS_print_bursts]    sys_print_bursts,
 
 };
 
