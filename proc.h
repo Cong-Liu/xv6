@@ -66,6 +66,11 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  /* Machine Problem 1: CPU Bursts */
+  int bursts[100];             //Array to keep track of up to 100 bursts in this process
+  int burstStart;              //The start time (tick) of most recent cpu burst
+  int burstIdx;                //Index to the next empty slot in the array to store burst
 };
 
 // Process memory is laid out contiguously, low addresses first:
