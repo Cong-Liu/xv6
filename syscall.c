@@ -140,8 +140,22 @@ syscall(void)
   int num;
 
   num = proc->tf->eax;
+
+  /* Machine Problem 1: CPU burst */
+  //check if we need to keep track of CPU bursts in current syscall 
+  uint isCPUBurst;
+  if (num >= SYS_start_burst && num <= SYS_print_bursts) isCPUBurst = 1;
+  else isCPUBurst = 0;
+
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+	//end previous cpu burst
+	if (isCPUBurst == 0) sys_end_burst();
+
+	//do the actual syscall
     proc->tf->eax = syscalls[num]();
+
+	//start a new cpu burst
+	if (isCPUBurst == 0) sys_start_burst();
   } else {
     cprintf("%d %s: unknown sys call %d\n",
             proc->pid, proc->name, num);
