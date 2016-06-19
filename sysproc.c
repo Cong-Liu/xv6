@@ -117,8 +117,7 @@ sys_end_burst(void)
 
 	//store the burst into array
 	int size = sizeof(proc->bursts) / sizeof(int);
-	proc->bursts[proc->burstIdx] = burst;
-	proc->burstIdx = (proc->burstIdx + 1) % size;
+	proc->bursts[proc->burstIdx++ % size] = burst;
 
 	return burst;
 }
@@ -133,9 +132,10 @@ sys_print_bursts(void)
 		return 0;
 	}
 
+	int size = sizeof(proc->bursts) / sizeof(int);
 	int i;
 	for (i = 0; i < idx; i++) {
-		cprintf("%d, ", proc->bursts[i]);
+		cprintf("%d, ", proc->bursts[i % size]);
 	}
 
 	/* Machine Problem 1.3: Modifying the Scheduler */
