@@ -20,6 +20,9 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+/* Machine Problem 1: CPU Bursts */
+int sys_uptime(void);
+
 void
 pinit(void)
 {
@@ -69,6 +72,10 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+
+  //Machine Problem 1: initialize CPU burst
+  p->burstIdx = 0;
+  p->burstStart = sys_uptime();
 
   return p;
 }
