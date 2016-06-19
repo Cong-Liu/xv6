@@ -95,19 +95,48 @@ sys_uptime(void)
 int
 sys_start_burst(void)
 {
-	return 0;
+	//get current system time tick
+	uint xticks = sys_uptime();
+
+	//keep track of current tick as burst start
+	proc->burstStart = xticks;
+
+	return xticks;
 }
 
 //End tracking a CPU burst
 int
 sys_end_burst(void)
 {
-	return 0;
+	//get current system time tick
+	uint xticks = sys_uptime();
+
+	//calculate cpu burst
+	int burst = xticks - proc->burstStart;
+	if (burst == 0) return 0;
+
+	//store the burst into array
+	proc->bursts[proc->burstIdx] = burst;
+	proc->burstIdx = (proc->burstIdx + 1) % 100;
+
+	return burst;
 }
 
 //Print all CPU burst of a process
 int
 sys_print_bursts(void)
 {
-	return 0;
+	int idx = proc->burstIdx;
+	if (idx <= 0) {
+		cprintf("There is no CPU bursts yet.\r\n");
+		return 0;
+	}
+
+	int i;
+	for (i = 0; i < idx; i++) {
+		if (i > 0) cprintf(", ");
+		cprintf("%d", proc->bursts[i]);
+	}
+
+	return idx;
 }
