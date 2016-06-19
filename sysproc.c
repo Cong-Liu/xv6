@@ -135,11 +135,12 @@ sys_print_bursts(void)
 
 	int i;
 	for (i = 0; i < idx; i++) {
-		if (i > 0) cprintf(", ");
-		cprintf("%d", proc->bursts[i]);
+		cprintf("%d, ", proc->bursts[i]);
 	}
 
-	cprintf("\r\n");
+	/* Machine Problem 1.3: Modifying the Scheduler */
+	int turnaround = sys_uptime() - proc->creationTime;
+	cprintf("Turnaround time: %d\r\n", turnaround);
 
 	return idx;
 }
