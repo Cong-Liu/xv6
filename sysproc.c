@@ -88,3 +88,26 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+/* Machine Problem 1: CPU Bursts */
+
+//Start tracking a CPU burst
+int
+sys_start_burst(void)
+{
+	return 0;
+}
+
+//End tracking a CPU burst
+int
+sys_end_burst(void)
+{
+	return 0;
+}
+
+//Print all CPU burst of a process
+int
+sys_print_bursts(void)
+{
+	return 0;
+}

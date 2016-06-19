@@ -23,6 +23,11 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 
+/* Machine Problem 1: CPU Bursts */
+int start_burst(void);
+int end_burst(void);
+int print_bursts(void);
+
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

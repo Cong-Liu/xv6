@@ -29,3 +29,9 @@ SYSCALL(getpid)
 SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
+
+#Machine Problem 1: CPU Bursts
+SYSCALL(start_burst)
+SYSCALL(end_burst)
+SYSCALL(print_bursts)
+

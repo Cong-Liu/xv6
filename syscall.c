@@ -99,6 +99,11 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 
+/* Machine Problem 1: CPU Bursts */
+extern int sys_start_burst(void);
+extern int sys_end_burst(void);
+extern int sys_print_bursts(void);
+
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
 [SYS_exit]    sys_exit,
@@ -121,6 +126,12 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+
+/* Machine Problem 1: CPU Bursts */
+[SYS_start_burst]    sys_start_burst,
+[SYS_start_burst]    sys_end_burst,
+[SYS_start_burst]    sys_print_bursts,
+
 };
 
 void
