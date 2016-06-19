@@ -76,6 +76,7 @@ found:
   //Machine Problem 1: initialize CPU burst
   p->burstIdx = 0;
   p->burstStart = sys_uptime();
+  p->creationTime = p->burstStart;
 
   return p;
 }
