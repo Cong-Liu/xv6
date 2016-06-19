@@ -254,6 +254,27 @@ wait(void)
   }
 }
 
+/* Machine Problem 1.3: modify scheduler */
+// Calculate process remaining time by use the average of the last three CPU bursts
+int calcRemainingTime(struct proc *p) {
+	int const AVERAGE = 3;	//we only calculate average of last 3 bursts
+
+	//return 0 if there is no enough CPU bursts to use
+	int idx = p->burstIdx;
+	if (idx <= AVERAGE) return 0;
+
+	int size = sizeof(p->bursts) / sizeof(int);
+	int total = 0;
+
+	//calculate the average
+	int i;
+	for (i = idx - AVERAGE; i < idx; i++) {
+		total += p->bursts[i % size];
+	}
+
+	return total / AVERAGE;
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -276,6 +297,42 @@ scheduler(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
+
+	  /* Machine Problem 1.3: implement Shortest Remaining Time First (SRTF) scheduler */
+	  int shortestTime = calcRemainingTime(p);
+	  struct proc *shortestProc = p;
+
+	  //this process has sufficient (more than 3) CPU bursts to calculate
+	  if (shortestTime > 0) {
+		  //find shortest remaining time process
+		  int i;
+		  struct proc *currentProc = p;
+		  for (i = 1; i < NPROC; i++) {
+			  //go to next process
+			  currentProc++;
+			  if (currentProc >= &ptable.proc[NPROC])
+				  currentProc = ptable.proc;
+
+			  //only check runnable process
+			  if (currentProc->state != RUNNABLE) continue;
+
+			  //check remaining time
+			  int currentTime = calcRemainingTime(currentProc);
+			  if (currentTime > shortestTime) continue;
+
+			  //this process has the shortest remaining time so far
+			  shortestTime = currentTime;
+			  shortestProc = currentProc;
+
+			  //0 is the smallest value for sure
+			  if (shortestTime == 0) break;
+		  }
+
+		  p = shortestProc;
+
+		  //cprintf("Switch %d: %d\r\n", p->pid, shortestTime);  //for testing
+	  }
+	  /* Machine Problem 1.3 End */
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
