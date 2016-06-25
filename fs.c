@@ -366,10 +366,46 @@ bmap(struct inode *ip, uint bn)
   }
   bn -= NDIRECT;
 
+  /* Machine Problem 4 */
+  
+  uint* addrs = ip->addrs;
+  uint addrIdx;
+
+  if (bn < NINDIRECT) {
+	  //first indirect node
+	  addrIdx = NDIRECT;
+  }
+  else if (bn < 2 * NINDIRECT) {
+	  //second indirect node
+	  addrIdx = NDIRECT + 1;
+	  bn -= NINDIRECT;
+  }
+  else if (bn < 2 * NINDIRECT + NINDIRECT * NINDIRECT) {
+	  //double indirect node
+	  bn -= 2 * NINDIRECT;
+	  addrIdx = bn / NINDIRECT;
+
+	  //read and allocate the double-direct block if necessary
+	  if ((addr = ip->addrs[NDIRECT + 2]) == 0)
+		  ip->addrs[NDIRECT + 2] = addr = balloc(ip->dev);
+	  bp = bread(ip->dev, addr);
+	  a = (uint*)bp->data;
+	  if ((addr = a[addrIdx]) == 0) {
+		  a[addrIdx] = addr = balloc(ip->dev);
+		  log_write(bp);
+	  }
+
+	  brelse(bp);
+
+	  //prepare for reading indirect node
+	  bn = bn % NINDIRECT;
+	  addrs = a;
+  }
+
   if(bn < NINDIRECT){
     // Load indirect block, allocating if necessary.
-    if((addr = ip->addrs[NDIRECT]) == 0)
-      ip->addrs[NDIRECT] = addr = balloc(ip->dev);
+    if((addr = addrs[addrIdx]) == 0)
+      addrs[addrIdx] = addr = balloc(ip->dev);
     bp = bread(ip->dev, addr);
     a = (uint*)bp->data;
     if((addr = a[bn]) == 0){

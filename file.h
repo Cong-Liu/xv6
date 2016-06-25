@@ -21,7 +21,7 @@ struct inode {
   short minor;
   short nlink;
   uint size;
-  uint addrs[NDIRECT+1];
+  uint addrs[NDIRECT+3];	//10 direct, 2 indirect, 1 double indirect
 };
 #define I_BUSY 0x1
 #define I_VALID 0x2
