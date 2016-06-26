@@ -144,3 +144,40 @@ sys_print_bursts(void)
 
 	return idx;
 }
+
+/* Machine Problem 2: Kernel Threads */
+
+//Create a new thread
+int
+sys_thread_create(void)
+{
+	return -1;
+}
+
+//wait until child thread has been terminated
+int
+sys_thread_join(void)
+{
+	return -1;
+}
+
+//Creates a mutex lock and returns an opaque ID
+int
+sys_mtx_create(void)
+{
+	return -1;
+}
+
+//Blocks until the lock has been acquired
+int
+sys_mtx_lock(void)
+{
+	return -1;
+}
+
+//Releases the lock, potentially unblocking a waiting thread
+int
+sys_mtx_unlock(void)
+{
+	return -1;
+}

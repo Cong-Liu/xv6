@@ -28,6 +28,13 @@ int start_burst(void);
 int end_burst(void);
 int print_bursts(void);
 
+/* Machine Problem 2: Kernel Threads */
+int thread_create(void(*tmain)(void *), void *stack, void *arg);
+int thread_join(void **stack);
+int mtx_create(int locked);
+int mtx_lock(int lock_id);
+int mtx_unlock(int lock_id);
+
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

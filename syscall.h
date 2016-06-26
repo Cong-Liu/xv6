@@ -25,3 +25,10 @@
 #define SYS_start_burst   22
 #define SYS_end_burst     23
 #define SYS_print_bursts  24
+
+/* Machine Problem 2: Kernel Threads */
+#define SYS_thread_create 25
+#define SYS_thread_join   26
+#define SYS_mtx_create    27
+#define SYS_mtx_lock      28
+#define SYS_mtx_unlock    29

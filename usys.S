@@ -35,3 +35,9 @@ SYSCALL(start_burst)
 SYSCALL(end_burst)
 SYSCALL(print_bursts)
 
+#Machine Problem 2: Kernel Threads
+SYSCALL(thread_create)
+SYSCALL(thread_join)
+SYSCALL(mtx_create)
+SYSCALL(mtx_lock)
+SYSCALL(mtx_unlock)
