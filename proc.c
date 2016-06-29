@@ -224,7 +224,7 @@ wait(void)
     // Scan through table looking for zombie children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != proc)
+      if(p->parent != proc || p->pgdir == proc->pgdir)  //Modified fir MP2: ignore child threads
         continue;
       havekids = 1;
       if(p->state == ZOMBIE){
@@ -522,3 +522,103 @@ procdump(void)
 }
 
 
+/* Machine Problem 2: Kernel Threads */
+
+//Create a new thread
+//Similar to fork() with some changes
+int thread_create(void(*tmain)(void *), void *stack, void *arg)
+{
+	int i, pid;
+	struct proc *np;
+
+	// Allocate process.
+	if ((np = allocproc()) == 0)
+		return -1;
+
+	//copy process info from parent process
+	np->pgdir = proc->pgdir;  //share the same address space
+	np->sz = proc->sz;
+	np->parent = proc;
+	*np->tf = *proc->tf;
+
+	/* Setup trapframe for child thread */
+
+	//initialize user stack
+	const uint size = 32;
+	uint topOfStack = (uint)stack + 4 * size;
+	uint *userStack = (uint*)stack;
+	userStack[size - 1] = 0xffffffff;  //return PC for main
+	userStack[size - 2] = (uint)arg;   //first argument for main
+	userStack[size - 3] = topOfStack;  //stack pointer
+	userStack[size - 4] = 0;           //nul-terminated string
+
+	//link user stack to trapframe
+	np->tf->esp = topOfStack - 3 * 4;  //address of the top of the stack
+	np->tf->ebp = (uint)stack;         //address of the bottom of the stack
+	np->tf->eip = (uint)(tmain);       //address of the instruction to be executed
+
+	/* End */
+
+	for (i = 0; i < NOFILE; i++)
+		if (proc->ofile[i])
+			np->ofile[i] = filedup(proc->ofile[i]);
+	np->cwd = idup(proc->cwd);
+
+	pid = np->pid;
+	np->state = RUNNABLE;
+	safestrcpy(np->name, proc->name, sizeof(proc->name));
+	return pid;
+}
+
+
+//wait until child thread has been terminated
+//Similar to wait() with minor changes
+int thread_join(void **stack)
+{
+	struct proc *p;
+	int havekids, pid;
+
+	acquire(&ptable.lock);
+	for (;;) {
+		// Scan through table looking for zombie children.
+		havekids = 0;
+		for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+			if (p->parent != proc || p->pgdir != proc->pgdir)
+				continue;
+			havekids = 1;
+			if (p->state == ZOMBIE) {
+				// Found one.
+
+				//get thread stack
+				uint *ebp = (uint*)p->tf->ebp;    //base pointer EBP contains the address of the bottom of the stack
+				*stack = (void*)(ebp);            //calculate stack address
+				
+				//for testing
+                //cprintf("Inside: 0x%x, 0x%x\n", stack, p->tf->ebp);
+
+				pid = p->pid;
+				kfree(p->kstack);
+				p->kstack = 0;
+				
+				//do not free page table, since parent process may still use
+				//freevm(p->pgdir);
+				p->state = UNUSED;
+				p->pid = 0;
+				p->parent = 0;
+				p->name[0] = 0;
+				p->killed = 0;
+				release(&ptable.lock);
+				return pid;
+			}
+		}
+
+		// No point waiting if we don't have any children.
+		if (!havekids || proc->killed) {
+			release(&ptable.lock);
+			return -1;
+		}
+
+		// Wait for children to exit.  (See wakeup1 call in proc_exit.)
+		sleep(proc, &ptable.lock);  //DOC: wait-sleep
+	}
+}

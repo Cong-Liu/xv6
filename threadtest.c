@@ -46,6 +46,8 @@ int bufferGet()
 void producer(void * arg)
 {
 	int iteration = *(int *)arg;
+
+	printf(1, "Producer started with param %d\n", iteration);
 	int count;
 	for (count = 0; count < iteration; count++) {
 
@@ -63,12 +65,16 @@ void producer(void * arg)
 		bufferAdd(count);
 		printf(1, "Producer added item %d to buffer\n", count);
 	}
+
+	exit();
 }
 
 //Consumer thread
 void consumer(void * arg)
 {
 	int iteration = *(int *)arg;
+
+	printf(1, "Consumer started with param %d\n", iteration);
 	int count;
 	for (count = 0; count < iteration; count++) {
 
@@ -86,6 +92,8 @@ void consumer(void * arg)
 			}
 		}
 	}
+
+	exit();
 }
 
 int main(int argc, char *argv[])
@@ -94,24 +102,28 @@ int main(int argc, char *argv[])
 	buffer.current = -1;
 
 	//prepare thread argument
-	int iteration = 50;
+	int iteration = 5;
 	int *arg = &iteration;
 
 	//create producer thread
-	uint* stack1 = (uint*)malloc(32 * sizeof(uint));
+	uint* stack1 = (uint*)malloc(64 * sizeof(uint));
 	int producerId = thread_create(producer, (void*)stack1, (void*)arg);
-	printf(1, "Producer thread %d created.\n", producerId);
+	printf(1, "Producer thread %d created at stack 0x%x.\n", producerId, stack1);
+
+	sleep(120);
 
 	//create consumer thread
-	uint* stack2 = (uint*)malloc(32 * sizeof(uint));
+	uint* stack2 = (uint*)malloc(64 * sizeof(uint));
 	int consumerId = thread_create(consumer, (void*)stack2, (void*)arg);
-	printf(1, "Consumer thread %d created.\n", consumerId);
+	printf(1, "Consumer thread %d created at stack 0x%x.\n", consumerId, stack2);
+
+	//sleep(1000);
 
 	//wait until all child thread are exit
 	uint* stack = (uint*)0;
 	int threadId;
-	while ((threadId = thread_join((void*)stack)) != -1) {
-		printf(1, "Thread %d finished.\n", threadId);
+	while ((threadId = thread_join((void**)&stack)) != -1) {
+		printf(1, "Thread %d finished at stack 0x%x.\n", threadId, *stack);
 		free(stack);
 	}
 

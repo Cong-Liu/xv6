@@ -146,19 +146,34 @@ sys_print_bursts(void)
 }
 
 /* Machine Problem 2: Kernel Threads */
+extern int thread_create(void(*tmain)(void *), void *stack, void *arg);
+extern int thread_join(void **stack);
+extern int mtx_create(int locked);
+extern int mtx_lock(int lock_id);
+extern int mtx_unlock(int lock_id);
+
 
 //Create a new thread
 int
 sys_thread_create(void)
 {
-	return -1;
+	char* tmain, *stack, *arg;
+
+	if (argptr(0, &tmain, 1) < 0 || argptr(1, &stack, 1) < 0 || argptr(2, &arg, 1) < 0)
+		return -1;
+
+	return thread_create((void*)tmain, (void*)stack, (void*)arg);
 }
 
 //wait until child thread has been terminated
 int
 sys_thread_join(void)
 {
-	return -1;
+	char* stack;
+	if (argptr(0, &stack, 1) < 0)
+		return -1;
+
+	return thread_join((void**)stack);
 }
 
 //Creates a mutex lock and returns an opaque ID
