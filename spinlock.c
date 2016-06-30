@@ -15,6 +15,7 @@ initlock(struct spinlock *lk, char *name)
   lk->name = name;
   lk->locked = 0;
   lk->cpu = 0;
+  lk->pid = -1;	//Machine Problem 2
 }
 
 // Acquire the lock.
