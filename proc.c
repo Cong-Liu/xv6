@@ -622,3 +622,74 @@ int thread_join(void **stack)
 		sleep(proc, &ptable.lock);  //DOC: wait-sleep
 	}
 }
+
+//Additional data structures to store mutex lock
+#define NMUTEX 100
+struct {
+	struct spinlock locks[NMUTEX];
+	int index;
+} Mutex;
+
+
+//Creates a mutex lock and returns an opaque ID
+int mtx_create(int locked) {
+	//check mutex index
+	if (Mutex.index < 0 || Mutex.index > NMUTEX) return -1;
+
+	//increase the index value first
+	//to mark this slot as used
+	//so other thread will not take this slot at the same time
+	Mutex.index++;
+	
+	//initialize the lock
+	struct spinlock *lock = &Mutex.locks[Mutex.index - 1];
+	initlock(lock, &"Mutex"[Mutex.index - 1]);
+	lock->pid = proc->pid;
+
+	//set the lock if needed
+	if (locked) {
+		lock->locked = 1;
+		lock->cpu = cpu;
+	}
+
+	return Mutex.index;
+}
+
+//Blocks until the lock has been acquired
+int mtx_lock(int lock_id) {
+	//check lock id
+	if (lock_id < 0 || lock_id >= Mutex.index) return -1;
+
+	struct spinlock *lock = &Mutex.locks[lock_id];
+
+	//check if this lock has been hold by same thread
+	if (lock->pid == proc->pid && holding(lock))
+		panic("Thread is aquiring the same lock again");
+
+	//looping until this lock is released
+	while (xchg(&lock->locked, 1) != 0)
+		;
+	lock->cpu = cpu;
+	lock->pid = proc->pid;
+
+	return 0;
+}
+
+//Releases the lock, potentially unblocking a waiting thread
+int mtx_unlock(int lock_id) {
+	//check lock id
+	if (lock_id < 0 || lock_id >= Mutex.index) return -1;
+
+	struct spinlock *lock = &Mutex.locks[lock_id];
+
+	//check if this lock has been hold by current thread
+	if (lock->pid != proc->pid || holding(lock))
+		panic("Mutex lock is not held by this thread");
+
+	lock->cpu = 0;
+	lock->pid = -1;
+
+	xchg(&lock->locked, 0);
+
+	return 0;
+}

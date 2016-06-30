@@ -180,19 +180,31 @@ sys_thread_join(void)
 int
 sys_mtx_create(void)
 {
-	return -1;
+	int locked;
+	if (argint(0, &locked) < 0)
+		return -1;
+
+	return mtx_create(locked);
 }
 
 //Blocks until the lock has been acquired
 int
 sys_mtx_lock(void)
 {
-	return -1;
+	int lock_id;
+	if (argint(0, &lock_id) < 0)
+		return -1;
+
+	return mtx_lock(lock_id);
 }
 
 //Releases the lock, potentially unblocking a waiting thread
 int
 sys_mtx_unlock(void)
 {
-	return -1;
+	int lock_id;
+	if (argint(0, &lock_id) < 0)
+		return -1;
+
+	return mtx_unlock(lock_id);
 }
