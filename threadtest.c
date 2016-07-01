@@ -1,5 +1,6 @@
 #include "types.h"
 #include "user.h"
+#include "spinlock.h"
 
 unsigned short lfsr = 0xACE1u;
 unsigned bit;
@@ -28,18 +29,48 @@ struct Buffer
 
 struct Buffer buffer;
 
+int mutexLock;
+int itemsLock;
+int spacesLock;
+
 //put a value into buffer
 void bufferAdd(int value)
 {
-	if (buffer.current >= BufSize) error("Buffer full.");
+	//wait for space
+	mtx_lock(mutexLock);
+	if (buffer.current >= BufSize) mtx_lock(spacesLock);
+	mtx_unlock(mutexLock);
+
+	//add item to buffer
+	mtx_lock(mutexLock);
 	buffer.data[++buffer.current] = value;
+	mtx_unlock(mutexLock);
+
+	//notify other thread items are available
+	mtx_lock(mutexLock);
+	if (buffer.current == 0) mtx_unlock(itemsLock);
+	mtx_unlock(mutexLock);	
 }
 
 //get a value from buffer
 int bufferGet()
 {
-	if (buffer.current < 0) error("Buffer empty.");
-	return buffer.data[buffer.current--];
+	//wait for an item
+	mtx_lock(mutexLock);
+	if (buffer.current < 0) mtx_lock(itemsLock);
+	mtx_unlock(mutexLock);
+	
+	//get item from buffer
+	mtx_lock(mutexLock);
+	int item = buffer.data[buffer.current--];
+	mtx_unlock(mutexLock);
+
+	//notify other thread spaces are available
+	mtx_lock(mutexLock);
+	if (buffer.current == BufSize - 1) mtx_unlock(spacesLock);
+	mtx_unlock(mutexLock);	
+
+	return item;
 }
 
 //Producer thread
@@ -100,6 +131,12 @@ int main(int argc, char *argv[])
 {
 	printf(1, "*** Machine Problem 2: Kernel Thread Test ***\n");
 	buffer.current = -1;
+
+	//initialize 3 locks
+	mutexLock = mtx_create(0);
+	itemsLock = mtx_create(0);
+	spacesLock = mtx_create(0);
+	//printf(1, "Lock: Mutex %d, Items %d, Spaces %d\n", mutexLock, itemsLock, spacesLock);
 
 	//prepare thread argument
 	int iteration = 5;

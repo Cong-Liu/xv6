@@ -663,8 +663,10 @@ int mtx_lock(int lock_id) {
 	struct spinlock *lock = &Mutex.locks[lock_id];
 
 	//check if this lock has been hold by same thread
-	if (lock->pid == proc->pid && holding(lock))
+	if (lock->pid == proc->pid && holding(lock)) {
+		//cprintf("Lock id %d\n", lock_id);
 		panic("Thread is aquiring the same lock again");
+	}
 
 	//looping until this lock is released
 	while (xchg(&lock->locked, 1) != 0)
@@ -681,10 +683,6 @@ int mtx_unlock(int lock_id) {
 	if (lock_id < 0 || lock_id >= Mutex.index) return -1;
 
 	struct spinlock *lock = &Mutex.locks[lock_id];
-
-	//check if this lock has been hold by current thread
-	if (lock->pid != proc->pid || holding(lock))
-		panic("Mutex lock is not held by this thread");
 
 	lock->cpu = 0;
 	lock->pid = -1;
