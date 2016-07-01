@@ -1,0 +1,34 @@
+-----Result One ----------
+number of philosophers:  10 , number of meals:  5
+1. Footman solution, time elapsed: 2.540s
+2. Left-handed solution, time elapsed: 2.432s
+3. Tanenbaum's solution, time elapsed: 0.898s
+--------------------------
+
+-----Result Two ----------
+number of philosophers:  10 , number of meals:  10
+1. Footman solution, time elapsed: 4.912s
+2. Left-handed solution, time elapsed: 5.462s
+3. Tanenbaum's solution, time elapsed: 1.620s
+----------------------------
+
+-----Result Three ----------
+number of philosophers:  5 , number of meals:  10
+1. Footman solution, time elapsed: 2.824s
+2. Left-handed solution, time elapsed: 2.233s
+3. Tanenbaum's solution, time elapsed: 1.447s
+---------------------------
+
+-----Result Four ----------
+number of philosophers:  5 , number of meals:  5
+1. Footman solution, time elapsed: 1.413s
+2. Left-handed solution, time elapsed: 1.388s
+3. Tanenbaum's solution, time elapsed: 0.776s
+
+From the test above, we can see that these three methods prevent starvation. This proves that all these methods would prevent deadlock.
+
+Comparing with these three methods, Tanenbaum's solution works best, and Footman and left-handed solutions are similar. I think it is because in Tanenbaum's solution, every philosipher will check the "status" of "neighbors" to avoid potential stavation. In this case the waiting time is decreasing, that's why Tanenbaum's solution works better than others. 
+
+Also, from the the time elapse we can see the number of meals is more effective than the number of philosophers. Comparing with result one vs two, result 3 vs 4, we can see when the number of meals doubles, the time elapse also doubles. However, comparing with result 1 vs 4, result 2 vs 3, when the number of philosophers doubles, the time elapses don't as sensitive as when the nuber of meals changes. In other words, the number of meals could be a more critical parameter than the number of philosophers.
+
+
